@@ -1,16 +1,11 @@
 import { useTheme } from '../ThemeContext'
 import { Logo } from '../Logo'
 
-export function MobileNav({ user, navigate, onClose, logout }) {
+export function MobileNav({ navigate, onClose }) {
   const { t } = useTheme()
 
   const handleNav = (view) => {
     navigate(view)
-    onClose()
-  }
-
-  const handleLogout = () => {
-    logout()
     onClose()
   }
 
@@ -49,57 +44,6 @@ export function MobileNav({ user, navigate, onClose, logout }) {
             </button>
           </div>
 
-          {user ? (
-            <>
-              <div className={`my-4 border-t ${t.border}`} />
-              <p className={`px-4 py-2 text-xs font-medium uppercase tracking-wider ${t.muted}`}>Account</p>
-              <div className="space-y-1">
-                <button
-                  onClick={() => handleNav('/feed')}
-                  className={`w-full text-left px-4 py-3 rounded-lg ${t.card} hover:opacity-80 transition`}
-                >
-                  Feed
-                </button>
-                <button
-                  onClick={() => handleNav('/posts')}
-                  className={`w-full text-left px-4 py-3 rounded-lg ${t.card} hover:opacity-80 transition`}
-                >
-                  My Posts
-                </button>
-                <button
-                  onClick={() => handleNav('/profile')}
-                  className={`w-full text-left px-4 py-3 rounded-lg ${t.card} hover:opacity-80 transition`}
-                >
-                  Profile
-                </button>
-              </div>
-              <div className={`my-4 border-t ${t.border}`} />
-              <button
-                onClick={handleLogout}
-                className={`w-full text-left px-4 py-3 rounded-lg ${t.btnSecondary} transition`}
-              >
-                Log out
-              </button>
-            </>
-          ) : (
-            <>
-              <div className={`my-4 border-t ${t.border}`} />
-              <div className="space-y-2">
-                <button
-                  onClick={() => handleNav('/login')}
-                  className={`w-full px-4 py-3 rounded-lg ${t.btnSecondary} transition`}
-                >
-                  Sign in
-                </button>
-                <button
-                  onClick={() => handleNav('/register')}
-                  className={`w-full px-4 py-3 rounded-lg ${t.btn} ${t.btnHover} transition`}
-                >
-                  Get started
-                </button>
-              </div>
-            </>
-          )}
         </div>
       </div>
     </div>

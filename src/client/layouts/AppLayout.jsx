@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useAuth, useNavigate } from '@basicbenframework/core/client'
+import { useNavigate } from '@basicbenframework/core/client'
 import { useTheme } from '../components/ThemeContext'
 import { RootLayout } from './RootLayout'
 import { DesktopNav } from '../components/Nav/DesktopNav'
@@ -9,7 +9,6 @@ import { Logo } from '../components/Logo'
 
 function AppLayoutInner({ children }) {
   const { t, dark, setDark } = useTheme()
-  const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -20,7 +19,7 @@ function AppLayoutInner({ children }) {
           <Logo className="w-6 h-6" />
           <span>BasicBen</span>
         </button>
-        <DesktopNav user={user} navigate={navigate} logout={logout} />
+        <DesktopNav navigate={navigate} />
 
         {/* Mobile Navigation Trigger */}
         <div className="flex sm:hidden items-center gap-2">
@@ -41,10 +40,8 @@ function AppLayoutInner({ children }) {
 
       {mobileMenuOpen && (
         <MobileNav
-          user={user}
           navigate={navigate}
           onClose={() => setMobileMenuOpen(false)}
-          logout={logout}
         />
       )}
     </div>
