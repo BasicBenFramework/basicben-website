@@ -1,0 +1,29 @@
+{
+  "name": "basicben-website",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "basicben dev",
+    "build": "basicben build",
+    "start": "basicben start",
+    "test": "basicben test",
+    "migrate": "basicben migrate",
+    "migrate:rollback": "basicben migrate:rollback",
+    "migrate:fresh": "basicben migrate:fresh",
+    "migrate:status": "basicben migrate:status",
+    "make:migration": "basicben make:migration",
+    "make:controller": "basicben make:controller",
+    "make:model": "basicben make:model"
+  },
+  "dependencies": {
+    "@basicbenframework/core": "latest",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.1.4",
+    "vite": "^7.3.1",
+    "vitest": "^4.0.0"
+  }
+}
