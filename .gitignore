@@ -12,6 +12,8 @@ dist/
 # Database
 *.db
 *.sqlite
+*.sqlite-shm
+*.sqlite-wal
 
 # IDE
 .idea/
