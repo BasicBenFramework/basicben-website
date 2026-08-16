@@ -29,3 +29,6 @@ npm-debug.log*
 
 # Test coverage
 coverage/
+
+# Working plans (local only, matches the framework repo)
+plans/
