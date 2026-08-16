@@ -61,11 +61,15 @@ export function Testing() {
         <Card>
           <h2 className="text-lg font-semibold mb-2">What the Framework Does Not Provide</h2>
           <p className={`text-sm ${t.muted} mb-4`}>
-            There is no testing module. Alongside the package root, the entry points are
-            <code>server</code>, <code>client</code>, <code>validation</code>,
-            <code>auth</code>, <code>db</code>, <code>hooks</code>, <code>plugins</code>,
-            <code>themes</code> and <code>updates</code> — that is the complete list. No test
-            client, no request builder, no database reset helper, no model factories.
+            There is no testing module. Alongside the package root there are twenty-one entry
+            points — <code>server</code>, <code>client</code>, <code>db</code>,{' '}
+            <code>auth</code>, <code>validation</code>, <code>content</code>,{' '}
+            <code>storage</code>, <code>mail</code>, <code>hooks</code>, <code>plugins</code>,{' '}
+            <code>themes</code>, <code>rate-limit</code>, <code>updates</code>, and the{' '}
+            <code>auth/*</code>,{' '}
+            <code>storage/*</code>, <code>plugins/*</code> and <code>themes/*</code> families —
+            and not one of them is for tests. No test client, no request builder, no database
+            reset helper, no model factories.
           </p>
 
           <p className={`text-sm ${t.muted} mb-4`}>
@@ -221,9 +225,10 @@ describe('posts', () => {
           </CodeBlock>
 
           <p className={`text-sm ${t.muted} mt-4`}>
-            Two things to watch. <code>db.url</code> in <code>basicben.config.js</code> takes
-            precedence over <code>DATABASE_URL</code>, so a project that sets it there will have
-            its tests write to the development database instead — set the test path in the
+            Two things to watch. The connection is one cached instance per process, resolved
+            once from <code>db.url</code> in <code>basicben.config.js</code> falling back to{' '}
+            <code>DATABASE_URL</code> — the config wins. A project that sets it there will have
+            its tests write to the development database instead, so set the test path in the
             config or leave <code>db.url</code> unset. And SQLite will not bind JavaScript
             booleans, so test data uses <code>1</code> and <code>0</code> like everything else.
           </p>
