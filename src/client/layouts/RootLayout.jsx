@@ -1,9 +1,24 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ThemeContext } from '../components/ThemeContext'
 import { ToastProvider } from '../contexts/ToastContext'
 
+const STORAGE_KEY = 'theme'
+
+function initialDark() {
+  if (typeof localStorage === 'undefined') return true
+  const stored = localStorage.getItem(STORAGE_KEY)
+  return stored === null ? true : stored === 'dark'
+}
+
 export function RootLayout({ children }) {
-  const [dark, setDark] = useState(true)
+  // Persisted because RootLayout is mounted inside each layout family, so the
+  // router unmounts this subtree when moving between them. An in-memory
+  // preference would reset every time you navigated from /docs back to /.
+  const [dark, setDark] = useState(initialDark)
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, dark ? 'dark' : 'light')
+  }, [dark])
 
   const t = dark
     ? { bg: 'bg-black', text: 'text-white', muted: 'text-white/50', subtle: 'text-white/30', border: 'border-white/10', card: 'bg-white/5', btn: 'bg-white text-black', btnHover: 'hover:bg-white/90', btnSecondary: 'bg-white/10 hover:bg-white/20' }

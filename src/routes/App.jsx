@@ -15,9 +15,11 @@ import { Routing } from '../client/pages/Routing'
 import { Authentication } from '../client/pages/Authentication'
 import { Validation } from '../client/pages/Validation'
 import { Testing } from '../client/pages/Testing'
+import { NotFound } from '../client/pages/NotFound'
 
 export default createClientApp({
   layout: AppLayout,
+  NotFound,
   routes: {
     '/': Home,
     '/login': { component: Auth, layout: AuthLayout, guest: true },

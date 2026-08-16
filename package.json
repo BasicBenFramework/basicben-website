@@ -18,7 +18,7 @@
     "make:model": "basicben make:model"
   },
   "dependencies": {
-    "@basicbenframework/core": "^0.1.14",
+    "@basicbenframework/core": "^0.1.18",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
