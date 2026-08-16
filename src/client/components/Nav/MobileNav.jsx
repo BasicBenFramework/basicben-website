@@ -56,7 +56,10 @@ export function MobileNav({ navigate, onClose }) {
               Feed
             </button>
 
-            {user ? (
+            {/* Log in / Sign up are hidden for now, together with the /login
+                and /register routes in src/routes/App.jsx — restore the two
+                together. */}
+            {user && (
               <>
                 <button
                   onClick={() => handleNav('/posts')}
@@ -75,21 +78,6 @@ export function MobileNav({ navigate, onClose }) {
                   className={`w-full text-left px-4 py-3 rounded-lg ${t.card} hover:opacity-80 transition`}
                 >
                   Log out
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={() => handleNav('/login')}
-                  className={`w-full text-left px-4 py-3 rounded-lg ${t.card} hover:opacity-80 transition`}
-                >
-                  Log in
-                </button>
-                <button
-                  onClick={() => handleNav('/register')}
-                  className={`w-full text-left px-4 py-3 rounded-lg ${t.card} hover:opacity-80 transition`}
-                >
-                  Sign up
                 </button>
               </>
             )}

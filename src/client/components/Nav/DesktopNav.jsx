@@ -17,18 +17,16 @@ export function DesktopNav({ navigate }) {
       <NavLink onClick={() => navigate('/docs')}>Docs</NavLink>
       <NavLink onClick={() => navigate('/feed')}>Feed</NavLink>
 
-      <div className={`w-px h-5 mx-1 ${dark ? 'bg-white/20' : 'bg-black/20'}`} />
-
-      {user ? (
+      {/* Log in / Sign up are hidden for now, together with the /login and
+          /register routes in src/routes/App.jsx — restore the two together.
+          The divider is inside the branch so a signed-out visitor does not get
+          two of them with nothing in between. */}
+      {user && (
         <>
+          <div className={`w-px h-5 mx-1 ${dark ? 'bg-white/20' : 'bg-black/20'}`} />
           <NavLink onClick={() => navigate('/posts')}>My Posts</NavLink>
           <NavLink onClick={() => navigate('/profile')}>Profile</NavLink>
           <NavLink onClick={handleLogout}>Log out</NavLink>
-        </>
-      ) : (
-        <>
-          <NavLink onClick={() => navigate('/login')}>Log in</NavLink>
-          <NavLink onClick={() => navigate('/register')}>Sign up</NavLink>
         </>
       )}
 

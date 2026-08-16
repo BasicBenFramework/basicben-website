@@ -1,9 +1,11 @@
 import { createClientApp } from '@basicbenframework/core/client'
 import { AppLayout } from '../client/layouts/AppLayout'
-import { AuthLayout } from '../client/layouts/AuthLayout'
+// Unused while /login and /register are hidden — kept so restoring the routes
+// below is a matter of uncommenting them.
+// import { AuthLayout } from '../client/layouts/AuthLayout'
 import { DocsLayout } from '../client/layouts/DocsLayout'
 import { Home } from '../client/pages/Home'
-import { Auth } from '../client/pages/Auth'
+// import { Auth } from '../client/pages/Auth'
 import { Feed } from '../client/pages/Feed'
 import { FeedPost } from '../client/pages/FeedPost'
 import { Posts } from '../client/pages/Posts'
@@ -25,8 +27,13 @@ export default createClientApp({
   NotFound,
   routes: {
     '/': Home,
-    '/login': { component: Auth, layout: AuthLayout, guest: true },
-    '/register': { component: Auth, layout: AuthLayout, guest: true },
+    // Hidden for now, along with the nav entries in client/components/Nav.
+    // Restore the two together. With these gone there is no way to sign in, so
+    // the auth-gated routes below are reachable only with an existing session,
+    // and a signed-out visitor who types one is bounced here and lands on
+    // NotFound — the router's redirect target for `auth` is always '/login'.
+    // '/login': { component: Auth, layout: AuthLayout, guest: true },
+    // '/register': { component: Auth, layout: AuthLayout, guest: true },
     '/feed': Feed,
     '/feed/:id': FeedPost,
     '/posts': { component: Posts, auth: true },
