@@ -1,6 +1,6 @@
-# My BasicBen App
+# BasicBen Website
 
-Built with [BasicBen](https://github.com/BasicBenFramework/core) — a full-stack React framework with zero runtime dependencies.
+The marketing and documentation site for [BasicBen](https://github.com/BasicBenFramework/core) — a full-stack React framework with zero runtime dependencies.
 
 ## Getting Started
 
@@ -21,7 +21,34 @@ npm run test         # Run tests
 
 npm run migrate      # Run database migrations
 npm run migrate:fresh   # Reset and re-run all migrations
+npm run seed         # Load sample data
 ```
+
+## Deployment
+
+The site builds to a Node server plus a static client bundle, and ships a
+Dockerfile that runs on any container host (Fly, Railway, Render, Cloud Run):
+
+```bash
+docker build -t basicben-website .
+docker run -p 3001:3001 \
+  -e APP_KEY=<32-char secret> \
+  -e CORS_ORIGIN=https://your-domain \
+  -v basicben-data:/app/data \
+  basicben-website
+```
+
+Two things to get right:
+
+- **Mount a volume at `/app/data`.** SQLite lives there, and without a volume
+  the database is discarded on every redeploy.
+- **Set `APP_KEY`.** It signs the JWTs. Changing it invalidates every session.
+
+Migrations run on boot and are idempotent, so a redeploy is safe.
+
+To deploy without Docker, run `npm run build` and then `npm run start` with
+`NODE_ENV=production`. The server serves the built client from `dist/client`,
+including a history fallback so deep links survive a refresh.
 
 ## Project Structure
 

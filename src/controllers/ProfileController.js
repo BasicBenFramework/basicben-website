@@ -1,10 +1,6 @@
 import { validate, rules } from '@basicbenframework/core/validation'
+import { hashPassword, verifyPassword } from '@basicbenframework/core/auth'
 import { User } from '../models/User.js'
-import { createHash } from 'node:crypto'
-
-function hashPassword(password) {
-  return createHash('sha256').update(password).digest('hex')
-}
 
 export const ProfileController = {
   async show(req, res) {
@@ -29,6 +25,9 @@ export const ProfileController = {
 
     const { name, email } = req.body
     const user = await User.find(req.userId)
+    if (!user) {
+      return res.json({ error: 'User not found' }, 404)
+    }
 
     if (email !== user.email) {
       const existing = await User.findByEmail(email)
@@ -55,12 +54,17 @@ export const ProfileController = {
 
     const { currentPassword, newPassword } = req.body
     const user = await User.find(req.userId)
+    if (!user) {
+      return res.json({ error: 'User not found' }, 404)
+    }
 
-    if (user.password !== hashPassword(currentPassword)) {
+    // Passwords are written by AuthController with the framework's scrypt
+    // hasher, so they must be checked with the matching verifier.
+    if (!(await verifyPassword(currentPassword, user.password))) {
       return res.json({ error: 'Current password is incorrect' }, 400)
     }
 
-    await User.update(req.userId, { password: hashPassword(newPassword) })
+    await User.update(req.userId, { password: await hashPassword(newPassword) })
     res.json({ message: 'Password updated successfully' })
   }
 }

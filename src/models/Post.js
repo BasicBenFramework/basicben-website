@@ -1,4 +1,7 @@
-import { getDb } from '@basicbenframework/core/db'
+import { getDb, query } from '@basicbenframework/core/db'
+
+// Columns update() may write.
+const UPDATABLE = ['title', 'content', 'published']
 
 export const Post = {
   async all() {
@@ -38,20 +41,31 @@ export const Post = {
   },
 
   async create(data) {
-    const db = await getDb()
-    const result = await db.run(
-      'INSERT INTO posts (user_id, title, content, published) VALUES (?, ?, ?, ?)',
-      [data.user_id, data.title, data.content, data.published ? 1 : 0]
-    )
+    // Query builder rather than raw SQL so Postgres gets RETURNING id.
+    const posts = await query('posts')
+    const result = await posts.insert({
+      user_id: data.user_id,
+      title: data.title,
+      content: data.content,
+      published: data.published ? 1 : 0
+    })
     return { id: result.lastInsertRowid, ...data }
   },
 
   async update(id, data) {
     const db = await getDb()
-    const fields = Object.keys(data).map(k => `${k} = ?`).join(', ')
+    const entries = Object.entries(data)
+      .filter(([k]) => UPDATABLE.includes(k))
+      .map(([k, v]) => (k === 'published' ? [k, v ? 1 : 0] : [k, v]))
+
+    if (entries.length === 0) {
+      return this.find(id)
+    }
+
+    const fields = entries.map(([k]) => `${k} = ?`).join(', ')
     await db.run(
       `UPDATE posts SET ${fields}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-      [...Object.values(data), id]
+      [...entries.map(([, v]) => v), id]
     )
     return this.find(id)
   },

@@ -16,7 +16,18 @@ export function Posts() {
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
 
-  const loadPosts = () => api('/api/posts').then(data => setPosts(data.posts)).finally(() => setLoading(false))
+  const loadPosts = () => api('/api/posts')
+    .then(data => setPosts(data.posts))
+    .catch(err => {
+      // A rejected request here usually means the stored token has expired.
+      // Without this the page renders an empty list, which reads as "no posts".
+      toast.error(err.message)
+      if (/unauthor|invalid token/i.test(err.message)) {
+        localStorage.removeItem('token')
+        navigate('/login')
+      }
+    })
+    .finally(() => setLoading(false))
 
   useEffect(() => { loadPosts() }, [])
 

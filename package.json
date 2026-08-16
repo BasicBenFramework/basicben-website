@@ -12,12 +12,13 @@
     "migrate:rollback": "basicben migrate:rollback",
     "migrate:fresh": "basicben migrate:fresh",
     "migrate:status": "basicben migrate:status",
+    "seed": "basicben seed",
     "make:migration": "basicben make:migration",
     "make:controller": "basicben make:controller",
     "make:model": "basicben make:model"
   },
   "dependencies": {
-    "@basicbenframework/core": "latest",
+    "@basicbenframework/core": "^0.1.14",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },

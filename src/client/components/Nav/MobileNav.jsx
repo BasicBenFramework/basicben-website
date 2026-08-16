@@ -1,12 +1,19 @@
+import { useAuth } from '@basicbenframework/core/client'
 import { useTheme } from '../ThemeContext'
 import { Logo } from '../Logo'
 
 export function MobileNav({ navigate, onClose }) {
   const { t } = useTheme()
+  const { user, logout } = useAuth()
 
   const handleNav = (view) => {
     navigate(view)
     onClose()
+  }
+
+  const handleLogout = () => {
+    logout()
+    handleNav('/')
   }
 
   return (
@@ -42,6 +49,50 @@ export function MobileNav({ navigate, onClose }) {
             >
               Docs
             </button>
+            <button
+              onClick={() => handleNav('/feed')}
+              className={`w-full text-left px-4 py-3 rounded-lg ${t.card} hover:opacity-80 transition`}
+            >
+              Feed
+            </button>
+
+            {user ? (
+              <>
+                <button
+                  onClick={() => handleNav('/posts')}
+                  className={`w-full text-left px-4 py-3 rounded-lg ${t.card} hover:opacity-80 transition`}
+                >
+                  My Posts
+                </button>
+                <button
+                  onClick={() => handleNav('/profile')}
+                  className={`w-full text-left px-4 py-3 rounded-lg ${t.card} hover:opacity-80 transition`}
+                >
+                  Profile
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className={`w-full text-left px-4 py-3 rounded-lg ${t.card} hover:opacity-80 transition`}
+                >
+                  Log out
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => handleNav('/login')}
+                  className={`w-full text-left px-4 py-3 rounded-lg ${t.card} hover:opacity-80 transition`}
+                >
+                  Log in
+                </button>
+                <button
+                  onClick={() => handleNav('/register')}
+                  className={`w-full text-left px-4 py-3 rounded-lg ${t.card} hover:opacity-80 transition`}
+                >
+                  Sign up
+                </button>
+              </>
+            )}
           </div>
 
         </div>

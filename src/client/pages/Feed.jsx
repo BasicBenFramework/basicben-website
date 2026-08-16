@@ -4,18 +4,24 @@ import { PageHeader } from '../components/PageHeader'
 import { PostCard } from '../components/PostCard'
 import { Loading } from '../components/Loading'
 import { Empty } from '../components/Empty'
+import { Alert } from '../components/Alert'
 import { api } from '../../helpers/api'
 
 export function Feed() {
   const navigate = useNavigate()
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
-    api('/api/feed').then(data => setPosts(data.posts)).finally(() => setLoading(false))
+    api('/api/feed')
+      .then(data => setPosts(data.posts))
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false))
   }, [])
 
   if (loading) return <Loading />
+  if (error) return <Alert type="error">{error}</Alert>
 
   return (
     <div>
