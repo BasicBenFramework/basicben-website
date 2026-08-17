@@ -31,6 +31,7 @@ function DocsSidebar({ children }) {
     { href: '/docs/content', label: 'Content & Markdown' },
     { href: '/docs/storage', label: 'Object Storage' },
     { href: '/docs/plugins', label: 'Plugins' },
+    { href: '/docs/headless', label: 'Headless API' },
     { href: '/docs/testing', label: 'Testing' },
   ]
 

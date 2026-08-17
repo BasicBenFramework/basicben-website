@@ -20,6 +20,7 @@ import { Testing } from '../client/pages/Testing'
 import { Content } from '../client/pages/Content'
 import { Storage } from '../client/pages/Storage'
 import { Plugins } from '../client/pages/Plugins'
+import { Headless } from '../client/pages/Headless'
 import { NotFound } from '../client/pages/NotFound'
 
 export default createClientApp({
@@ -48,6 +49,7 @@ export default createClientApp({
     '/docs/content': { component: Content, layout: DocsLayout },
     '/docs/storage': { component: Storage, layout: DocsLayout },
     '/docs/plugins': { component: Plugins, layout: DocsLayout },
+    '/docs/headless': { component: Headless, layout: DocsLayout },
     '/docs/testing': { component: Testing, layout: DocsLayout },
   }
 })
