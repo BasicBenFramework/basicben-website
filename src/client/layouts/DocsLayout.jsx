@@ -30,7 +30,7 @@ function DocsSidebar({ children }) {
     { href: '/docs/validation', label: 'Validation' },
     { href: '/docs/content', label: 'Content & Markdown' },
     { href: '/docs/storage', label: 'Object Storage' },
-    { href: '/docs/plugins', label: 'Plugins' },
+    { href: '/docs/extending', label: 'Extending' },
     { href: '/docs/headless', label: 'Headless API' },
     { href: '/docs/testing', label: 'Testing' },
   ]
