@@ -9,10 +9,13 @@ export default {
   port: 3001,
 
   // CORS configuration
+  // Auth is a bearer token, not a cookie, so credentialed CORS is not needed —
+  // and the framework refuses `origin: '*'` together with `credentials: true`,
+  // which browsers reject anyway.
   cors: {
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    credentials: true
+    credentials: false
   },
 
   // Body parser options
