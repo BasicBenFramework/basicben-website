@@ -26,8 +26,27 @@ npm run seed         # Load sample data
 
 ## Deployment
 
-The site builds to a Node server plus a static client bundle, and ships a
-Dockerfile that runs on any container host (Fly, Railway, Render, Cloud Run):
+### basicben.com
+
+basicben.com is a static site on Cloudflare Pages. Pages builds `main` on every
+push and serves the client bundle, `dist/client`; there is nothing to run by
+hand. The build command and output directory live in the Pages project's
+settings, not in this repo.
+
+Only the client is deployed. No Node server runs behind basicben.com, so
+`/api/*` answers with the app's `index.html`. The docs and the home page are
+client-side and need nothing else. The app pages are another matter:
+
+- Sign-in and registration are already hidden (see `src/routes/App.jsx`), so
+  My Posts and Profile cannot be reached there.
+- Feed is still in the nav and calls `/api/feed`, so on basicben.com it gets
+  HTML back instead of posts.
+
+### The full app
+
+To run the whole app, with the API, auth and the database, deploy the Node
+server as well. The repo ships a Dockerfile that runs on any container host
+(Fly, Railway, Render, Cloud Run):
 
 ```bash
 docker build -t basicben-website .
