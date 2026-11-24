@@ -10,7 +10,7 @@ export function GettingStarted() {
     { cmd: 'npm run build', desc: 'Build client and server for production' },
     { cmd: 'npm run build -- --static', desc: 'Build the client only, for static hosts' },
     { cmd: 'npm run start', desc: 'Run the production server' },
-    { cmd: 'npm run test', desc: 'Run tests with Vitest' },
+    { cmd: 'npm run test', desc: 'Run tests with node --test' },
   ]
 
   const makeCommands = [
@@ -27,6 +27,7 @@ export function GettingStarted() {
     { cmd: 'npm run migrate:rollback', desc: 'Roll back the last batch' },
     { cmd: 'npm run migrate:fresh', desc: 'Drop everything and re-run' },
     { cmd: 'npm run migrate:status', desc: 'Show migration status' },
+    { cmd: 'npx basicben migrate:unlock', desc: 'Clear a migration lock left by a crashed run' },
     { cmd: 'npx basicben seed', desc: 'Run database seeders' },
   ]
 

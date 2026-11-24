@@ -11,6 +11,7 @@ export async function seed() {
 
   // Create admin user
   await (await db.table('users'))
+    .only('name', 'email', 'password')
     .insert({
       name: 'Admin User',
       email: 'admin@example.com',
@@ -19,6 +20,7 @@ export async function seed() {
 
   // Create test user
   await (await db.table('users'))
+    .only('name', 'email', 'password')
     .insert({
       name: 'Test User',
       email: 'test@example.com',

@@ -43,7 +43,7 @@ export const Post = {
   async create(data) {
     // Query builder rather than raw SQL so Postgres gets RETURNING id.
     const posts = await query('posts')
-    const result = await posts.insert({
+    const result = await posts.only('user_id', 'title', 'content', 'published').insert({
       user_id: data.user_id,
       title: data.title,
       content: data.content,

@@ -25,10 +25,13 @@ export function Database() {
         <Card>
           <h2 className="text-lg font-semibold mb-2">Drivers</h2>
           <p className={`text-sm ${t.muted} mb-4`}>
-            There are two drivers: <code>sqlite</code> and <code>postgres</code>
-            (<code>pg</code> is an accepted alias). Anything else throws
+            There are three drivers: <code>sqlite</code>, <code>postgres</code>
+            (<code>pg</code> is an accepted alias) and <code>turso</code>. Anything else throws
             <code>Unknown database driver</code> when the connection is opened. Configure
-            the one you want in <code>basicben.config.js</code>.
+            the one you want in <code>basicben.config.js</code>, or leave <code>driver</code> out
+            and it is read from the URL: <code>postgres://</code> is Postgres,
+            <code>libsql://</code> (or a <code>TURSO_URL</code>) is Turso, and anything else is
+            a SQLite file.
           </p>
 
           <div className="grid gap-3 sm:grid-cols-2 mb-4">
@@ -44,6 +47,14 @@ export function Database() {
               <p className={`text-xs mt-1 ${t.muted}`}>
                 Uses <code>pg</code>, an optional dependency. Run <code>npm install pg</code>
                 if it is not already present.
+              </p>
+            </div>
+            <div className={`rounded-lg p-3 ${t.card} border ${t.border}`}>
+              <div className="font-semibold text-sm">Turso (libSQL)</div>
+              <p className={`text-xs mt-1 ${t.muted}`}>
+                Talks to Turso over HTTP with <code>fetch</code>, so there is nothing to install
+                and it runs on serverless hosts. Reads <code>TURSO_URL</code> and
+                <code>TURSO_AUTH_TOKEN</code>.
               </p>
             </div>
           </div>
@@ -83,8 +94,8 @@ export function Database() {
         <Card>
           <h2 className="text-lg font-semibold mb-2">Hosted Databases</h2>
           <p className={`text-sm ${t.muted} mb-4`}>
-            There is no adapter for any hosted provider specifically. What works is decided by
-            wire protocol, not by branding.
+            Turso has its own driver. For the rest, what works is decided by wire protocol, not
+            by branding.
           </p>
 
           <div className="space-y-3">
@@ -103,10 +114,12 @@ export function Database() {
               </p>
             </div>
             <div className={`rounded-lg p-3 ${t.card} border ${t.border}`}>
-              <div className="font-semibold text-sm">Turso and libSQL — not yet</div>
+              <div className="font-semibold text-sm">Turso and libSQL — works</div>
               <p className={`text-xs mt-1 ${t.muted}`}>
-                An HTTP libSQL adapter is planned but not shipped. <code>driver: 'turso'</code>
-                throws today.
+                <code>driver: 'turso'</code>, or set <code>TURSO_URL</code> and the driver is
+                picked for you. The token comes from <code>TURSO_AUTH_TOKEN</code> or the
+                <code>authToken</code> option. Transactions work; each holds its stream for its
+                duration.
               </p>
             </div>
             <div className={`rounded-lg p-3 ${t.card} border ${t.border}`}>
@@ -177,12 +190,50 @@ export const down = async (db) => {
           </p>
 
           <p className={`text-sm ${t.muted} mt-4`}>
-            Two statements cannot run inside a transaction, and neither appears in what this
-            framework ships: Postgres refuses <code>CREATE INDEX CONCURRENTLY</code> and{' '}
-            <code>VACUUM</code>, and SQLite ignores <code>PRAGMA foreign_keys</code> there — the
-            table-rebuild pattern that turns constraints off has to do it outside. A migration
-            that opens its own <code>db.transaction()</code> is fine: it joins the one already
-            open rather than starting a second, which both drivers refuse.
+            Some statements cannot run inside a transaction: Postgres refuses{' '}
+            <code>CREATE INDEX CONCURRENTLY</code> and <code>VACUUM</code>, and SQLite ignores{' '}
+            <code>PRAGMA foreign_keys</code> there — the table-rebuild pattern that turns
+            constraints off needs it outside. A migration that needs one opts out with{' '}
+            <code>export const transaction = false</code>, and then runs without the wrapper, in
+            both directions. A migration that opens its own <code>db.transaction()</code> is fine
+            without opting out: it joins the one already open rather than starting a second, which
+            both drivers refuse.
+          </p>
+
+          <CodeBlock title="Opting out of the transaction">
+{`export const transaction = false
+
+export const up = (db) =>
+  db.exec('CREATE INDEX CONCURRENTLY IF NOT EXISTS posts_slug ON posts (slug)')
+
+export const down = (db) =>
+  db.exec('DROP INDEX CONCURRENTLY IF EXISTS posts_slug')`}
+          </CodeBlock>
+
+          <p className={`text-sm ${t.muted} mt-4`}>
+            Nothing is undone if an opted-out migration fails halfway, so write it to be safe to
+            run twice: <code>IF NOT EXISTS</code> and friends.
+          </p>
+
+          <p className={`text-sm ${t.muted} mt-4`}>
+            <code>migrate</code>, <code>migrate:rollback</code> and <code>migrate:fresh</code> hold
+            a lock, so two replicas deploying at once cannot both apply a migration. The second
+            waits for the first, up to 10 minutes, and then finds nothing left to do. On Postgres
+            the lock is a session advisory lock, which the server releases if the process dies.
+            On SQLite it is a row in a <code>_migrations_lock</code> table; a run that crashes
+            leaves the row behind, the next run times out naming the holder, and{' '}
+            <code>npx basicben migrate:unlock</code> clears it.
+          </p>
+
+          <p className={`text-sm ${t.muted} mt-4`}>
+            Postgres falls back to the lock row when an advisory lock would misbehave: with{' '}
+            <code>poolSize: 1</code>, where the lock would hold the only connection, and behind
+            what looks like a transaction-mode pooler (a Neon <code>-pooler</code> host, or port
+            6432 for PgBouncer), where the lock and the unlock can land on different server
+            sessions. To choose outright, set <code>migrationLock</code> in{' '}
+            <code>basicben.config.js</code> to <code>'auto'</code> (the default),{' '}
+            <code>'advisory'</code>, <code>'table'</code>, or <code>false</code> for no lock. Behind
+            a pooler on any other address, set <code>'table'</code>.
           </p>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -201,6 +252,10 @@ export const down = async (db) => {
             <div className={`rounded-lg p-3 ${t.card} border ${t.border}`}>
               <code className="text-sm font-semibold">npm run migrate:status</code>
               <p className={`text-xs mt-1 ${t.muted}`}>Show which files have run</p>
+            </div>
+            <div className={`rounded-lg p-3 ${t.card} border ${t.border}`}>
+              <code className="text-sm font-semibold">npx basicben migrate:unlock</code>
+              <p className={`text-xs mt-1 ${t.muted}`}>Clear a lock row left by a crashed run</p>
             </div>
           </div>
 
@@ -229,7 +284,7 @@ import { ROLES } from '@basicbenframework/core/auth/permissions'
 export async function seed() {
   const password = await hashPassword('password123')
 
-  await (await db.table('users')).insert({
+  await (await db.table('users')).only('name', 'email', 'password', 'role').insert({
     name: 'Admin User',
     email: 'admin@example.com',
     password,
@@ -254,7 +309,7 @@ export async function seed() {
 export async function seed() {
   const user = await (await db.table('users')).first()
 
-  await (await db.table('posts')).insert({
+  await (await db.table('posts')).only('user_id', 'title', 'content', 'published').insert({
     user_id: user.id,
     title: 'Welcome to BasicBen',
     content: 'Your first post.',
@@ -329,17 +384,95 @@ const latest = await (await query('posts'))
 const drafts = await (await db.table('posts')).where('published', 0).get()`}
           </CodeBlock>
 
+          <CodeBlock title="Conditions">
+{`// IN and NOT IN take an array. An empty IN list matches nothing;
+// an empty NOT IN list matches everything.
+const some = await (await query('users')).whereIn('id', [1, 2, 3]).get()
+const rest = await (await query('users')).whereNotIn('role', ['admin']).get()
+
+// orWhere joins with OR. AND binds tighter, as in SQL:
+// where(a).orWhere(b).where(c) is a OR (b AND c)
+const flagged = await (await query('posts'))
+  .where('published', 0)
+  .orWhere('title', 'LIKE', '%draft%')
+  .get()
+
+// A callback adds a parenthesised group
+const visible = await (await query('posts'))
+  .where('user_id', userId)
+  .where(q => q.where('published', 1).orWhereNull('deleted_at'))
+  .get()
+// ... WHERE user_id = ? AND (published = ? OR deleted_at IS NULL)
+
+// A literal null compares with IS NULL / IS NOT NULL
+await (await query('users')).where('reset_token', null).get()       // IS NULL
+await (await query('users')).where('reset_token', '!=', null).get() // IS NOT NULL`}
+          </CodeBlock>
+
+          <p className={`text-sm ${t.muted} mt-4`}>
+            Only a literal <code>null</code> means IS NULL. Any other comparison with null, such as{' '}
+            <code>{"'<'"}</code>, throws. An <code>undefined</code> value in <code>where</code>,{' '}
+            <code>orWhere</code>, a group, or a <code>whereIn</code> list throws an error with{' '}
+            <code>code: 'UNDEFINED_VALUE'</code>: it is almost always a missing input, and{' '}
+            <code>where('reset_token', req.query.token)</code> with no token must not match every
+            row that has no token.
+          </p>
+
+          <CodeBlock title="Joins">
+{`const posts = await (await query('posts'))
+  .select('posts.*', 'users.name as author')
+  .join('users', 'users.id', '=', 'posts.user_id')
+  .where('posts.published', 1)
+  .orderBy('posts.created_at', 'DESC')
+  .limit(5)
+  .get()
+
+// The operator may be left out, and a table may be aliased
+await (await query('posts'))
+  .select('posts.title', 'u.name as author')
+  .leftJoin('users as u', 'u.id', 'posts.user_id')
+  .get()`}
+          </CodeBlock>
+
+          <p className={`text-sm ${t.muted} mt-4`}>
+            Columns can be qualified (<code>posts.title</code>, <code>posts.*</code>) and aliased
+            with <code>as</code>. <code>update()</code> and <code>delete()</code> refuse a builder
+            that has a join, because the dialects disagree on the syntax.
+          </p>
+
+          <CodeBlock title="LIKE">
+{`import { query, escapeLike } from '@basicbenframework/core/db'
+
+// Matches 'Hello', 'HELLO' and 'hello' on every driver
+const hits = await (await query('posts'))
+  .where('title', 'LIKE', \`%\${escapeLike(req.query.q)}%\`)
+  .get()`}
+          </CodeBlock>
+
+          <p className={`text-sm ${t.muted} mt-4`}>
+            <code>LIKE</code> and <code>NOT LIKE</code> ignore case on every dialect, the same way:
+            the builder emits <code>{"LOWER(col) LIKE LOWER(?) ESCAPE '\\'"}</code>. SQLite folds
+            ASCII letters only. <code>escapeLike()</code> escapes <code>%</code>, <code>_</code> and
+            backslash, so user input matches literally instead of as a pattern. The{' '}
+            <code>LOWER()</code> call means a plain index on the column is not used; on a large
+            table, search with an index on the lowered column or with raw SQL.
+          </p>
+
           <CodeBlock title="Writing">
-{`const result = await (await query('posts')).insert({
-  user_id: 1,
-  title: 'My Post',
-  content: 'Hello world'
-})
+{`// Every insert and update names the columns it may write
+const result = await (await query('posts'))
+  .only('user_id', 'title', 'content')
+  .insert({
+    user_id: 1,
+    title: 'My Post',
+    content: 'Hello world'
+  })
 
 result.lastInsertRowid   // id of the new row
 result.changes           // 1
 
 await (await query('posts'))
+  .only('title')
   .where('id', postId)
   .update({ title: 'Updated Title' })
 
@@ -353,6 +486,14 @@ await (await query('posts'))
             <code>lastInsertRowid</code> is filled in there too. A hand-written
             <code>INSERT</code> without that clause returns <code>null</code> instead, which is a
             good reason to insert through the builder.
+          </p>
+
+          <p className={`text-sm ${t.muted} mt-4`}>
+            A key whose value is <code>undefined</code> is left out of an insert or update rather
+            than written as NULL. An update no longer clears a column because an input was
+            missing, and an insert gets the column&rsquo;s default. Pass <code>null</code> to write
+            NULL. An update whose only values are undefined throws <code>No valid columns to
+            update</code>.
           </p>
 
           <CodeBlock title="Counting and paging">
@@ -377,11 +518,16 @@ const page = await (await query('posts'))
 
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
             {[
-              { name: 'select(...cols)', desc: 'Columns to return; defaults to *' },
-              { name: 'where(col, val)', desc: 'Equality shorthand' },
-              { name: 'where(col, op, val)', desc: '=, !=, <, >, <=, >=, LIKE, IN and friends' },
-              { name: 'whereNull(col)', desc: 'IS NULL' },
-              { name: 'whereNotNull(col)', desc: 'IS NOT NULL' },
+              { name: 'select(...cols)', desc: 'Columns to return; defaults to *. Qualify and alias with as' },
+              { name: 'join / leftJoin(table, a, op, b)', desc: 'INNER or LEFT JOIN; op defaults to =' },
+              { name: 'where(col, val)', desc: 'Equality shorthand; a null value is IS NULL' },
+              { name: 'where(col, op, val)', desc: '=, !=, <>, <, >, <=, >=, LIKE, NOT LIKE, IN, NOT IN' },
+              { name: 'where(q => ...)', desc: 'A parenthesised group' },
+              { name: 'orWhere(...)', desc: 'Same arguments as where(), joined with OR' },
+              { name: 'whereIn / whereNotIn(col, arr)', desc: 'IN and NOT IN' },
+              { name: 'orWhereIn(col, arr)', desc: 'IN, joined with OR' },
+              { name: 'whereNull / whereNotNull(col)', desc: 'IS NULL and IS NOT NULL' },
+              { name: 'orWhereNull / orWhereNotNull(col)', desc: 'The same, joined with OR' },
               { name: 'orderBy(col, dir)', desc: 'ASC or DESC' },
               { name: 'limit(n) / offset(n)', desc: 'Slice the result' },
               { name: 'get() / first()', desc: 'All rows, or the first one' },
@@ -390,7 +536,7 @@ const page = await (await query('posts'))
               { name: 'update(data) / delete()', desc: 'Return { lastInsertRowid, changes }' },
               { name: 'count() / exists()', desc: 'A number, and whether it is above zero' },
               { name: 'paginate(page, perPage)', desc: 'Rows plus the totals to render a pager' },
-              { name: 'only(...) / except(...)', desc: 'Mass assignment rules, below' },
+              { name: 'only(...) / except(...) / unguarded()', desc: 'Mass assignment rules, below' },
               { name: 'toSql()', desc: 'The SELECT this builder would run' },
             ].map(({ name, desc }) => (
               <div key={name} className={`rounded-lg p-3 ${t.card} border ${t.border}`}>
@@ -401,9 +547,11 @@ const page = await (await query('posts'))
           </div>
 
           <p className={`text-sm ${t.muted} mt-4`}>
-            Multiple <code>where</code> calls are joined with <code>AND</code>. Table and column
-            names are validated against <code>[a-zA-Z_][a-zA-Z0-9_]*</code> and quoted, and every
-            value goes in as a bound parameter, so user input cannot become SQL.
+            Multiple <code>where</code> calls are joined with <code>AND</code>, and{' '}
+            <code>orWhere</code> calls with <code>OR</code>. Table and column names, including
+            each part of a qualified name, are validated against{' '}
+            <code>[a-zA-Z_][a-zA-Z0-9_]*</code> and quoted, and every value goes in as a bound
+            parameter, so user input cannot become SQL.
           </p>
         </Card>
 
@@ -418,15 +566,15 @@ const page = await (await query('posts'))
 
           <CodeBlock title="Use 1 and 0">
 {`// Throws on SQLite
-await (await query('posts')).insert({ title: 'Draft', published: false })
+await (await query('posts')).only('title', 'published').insert({ title: 'Draft', published: false })
 await (await query('posts')).where('published', true).get()
 
 // Works
-await (await query('posts')).insert({ title: 'Draft', published: 0 })
+await (await query('posts')).only('title', 'published').insert({ title: 'Draft', published: 0 })
 await (await query('posts')).where('published', 1).get()
 
 // Convert where the value arrives, not everywhere it is used
-await (await query('posts')).insert({
+await (await query('posts')).only('title', 'published').insert({
   title: req.body.title,
   published: req.body.published ? 1 : 0
 })`}
@@ -436,10 +584,16 @@ await (await query('posts')).insert({
         <Card>
           <h2 className="text-lg font-semibold mb-2">Mass Assignment Protection</h2>
           <p className={`text-sm ${t.muted} mb-4`}>
-            <code>only()</code> lists the columns a write may touch; <code>except()</code> lists
-            the ones it may not. Anything excluded is dropped silently rather than raising, so a
-            request body with extra fields still succeeds — minus the fields it should not have
-            set. <code>id</code> is blocked by default.
+            Since 0.9, every <code>insert()</code> and <code>update()</code> must say which
+            columns it may write. A chain that calls neither <code>only()</code> nor{' '}
+            <code>unguarded()</code> throws an error with <code>code: 'MASS_ASSIGNMENT'</code>{' '}
+            before anything reaches the database. Raw <code>db.run()</code> is not affected.
+          </p>
+
+          <p className={`text-sm ${t.muted} mb-4`}>
+            <code>only()</code> lists the columns a write may touch — the model&rsquo;s fillable
+            list. Keys outside it are dropped silently rather than raising, so a request body with
+            extra fields still succeeds, minus the fields it should not have set.
           </p>
 
           <CodeBlock title="Whitelist with only()">
@@ -448,17 +602,47 @@ await (await query('posts')).insert({
   .insert(req.body)
 
 // Given { name: 'Bob', email: 'bob@test.com', is_admin: 1 }
-// the row is written without is_admin`}
+// the row is written without is_admin
+
+// Neither only() nor unguarded(): throws MASS_ASSIGNMENT
+await (await query('users')).insert(req.body)`}
           </CodeBlock>
 
-          <CodeBlock title="Blacklist with except()">
-{`await (await query('users'))
-  .except('id', 'is_admin', 'created_at')
+          <p className={`text-sm ${t.muted} mt-4`}>
+            <code>except()</code> narrows a write further: its columns are dropped even when{' '}
+            <code>only()</code> lists them. On its own it no longer permits a write. It also
+            replaces the default guard, which is <code>id</code>, so name <code>id</code> again
+            when you list other columns.
+          </p>
+
+          <CodeBlock title="Narrow a shared list with except()">
+{`const FILLABLE = ['name', 'email', 'bio', 'role']
+
+// Users may edit their own profile, but not their role
+await (await query('users'))
+  .only(...FILLABLE)
+  .except('id', 'role')
   .where('id', userId)
   .update(req.body)`}
           </CodeBlock>
 
           <p className={`text-sm ${t.muted} mt-4`}>
+            <code>unguarded()</code> writes every key it is given, except guarded ones — the 0.8
+            behaviour, said out loud. Use it for rows your own code built, never for a request
+            body.
+          </p>
+
+          <CodeBlock title="unguarded() for rows the code built">
+{`await (await query('audit_log')).unguarded().insert({
+  user_id: user.id,
+  action: 'login',
+  created_at: new Date().toISOString()
+})`}
+          </CodeBlock>
+
+          <p className={`text-sm ${t.muted} mt-4`}>
+            <code>id</code> stays guarded by default either way: it is dropped even if{' '}
+            <code>only()</code> lists it, unless an <code>except()</code> call replaces the guard.
             Prefer <code>only()</code>. A whitelist stays correct when someone adds a column
             later; a blacklist quietly stops covering everything.
           </p>
@@ -467,39 +651,29 @@ await (await query('posts')).insert({
         <Card>
           <h2 className="text-lg font-semibold mb-2">What the Builder Does Not Do</h2>
           <p className={`text-sm ${t.muted} mb-4`}>
-            The list above is all of it. There is no <code>join</code>, no
-            <code>whereIn</code>, no <code>orWhere</code>, no <code>groupBy</code>, and no
-            aggregate beyond <code>count()</code>. This is deliberate: a builder that covers
-            every query ends up as large as the SQL it hides. When you need more, write SQL.
+            The list above is all of it. There is no <code>groupBy</code>, no{' '}
+            <code>having</code>, no <code>distinct</code>, no right or full join, no{' '}
+            <code>whereBetween</code>, and no aggregate beyond <code>count()</code>. An update or
+            delete cannot use a join. This is deliberate: a builder that covers every query ends
+            up as large as the SQL it hides. When you need more, write SQL.
           </p>
 
-          <CodeBlock title="A join is a raw query">
+          <CodeBlock title="GROUP BY is a raw query">
 {`import { db } from '@basicbenframework/core/db'
 
-const posts = await db.all(
-  \`SELECT posts.*, users.name AS author
-     FROM posts
-     JOIN users ON users.id = posts.user_id
+const counts = await db.all(
+  \`SELECT users.name, COUNT(posts.id) AS post_count
+     FROM users
+     JOIN posts ON posts.user_id = users.id
     WHERE posts.published = ?
-    ORDER BY posts.created_at DESC
-    LIMIT 5\`,
+    GROUP BY users.id, users.name
+    ORDER BY post_count DESC\`,
   [1]
 )`}
           </CodeBlock>
 
-          <CodeBlock title="So is IN, with one placeholder per value">
-{`const ids = [1, 2, 3]
-const placeholders = ids.map(() => '?').join(', ')
-
-const users = await db.all(
-  \`SELECT * FROM users WHERE id IN (\${placeholders})\`,
-  ids
-)`}
-          </CodeBlock>
-
           <p className={`text-sm ${t.muted} mt-4`}>
-            Build placeholders from the array length and pass the values separately, never by
-            interpolating the values themselves.
+            Pass values separately as parameters, never by interpolating them into the SQL.
           </p>
         </Card>
 
@@ -604,24 +778,22 @@ export const Post = {
     return db.get('SELECT * FROM posts WHERE id = ?', [id])
   },
 
-  // A join has to be raw SQL, so this lives on the model rather than
-  // being reassembled at every call site.
+  // The join lives on the model rather than being reassembled at
+  // every call site.
   async findPublished() {
-    const db = await getDb()
-    return db.all(\`
-      SELECT posts.*, users.name AS author_name
-        FROM posts
-        JOIN users ON users.id = posts.user_id
-       WHERE posts.published = 1
-       ORDER BY posts.created_at DESC
-    \`)
+    return (await query('posts'))
+      .select('posts.*', 'users.name as author_name')
+      .join('users', 'users.id', 'posts.user_id')
+      .where('posts.published', 1)
+      .orderBy('posts.created_at', 'DESC')
+      .get()
   },
 
   async create(data) {
     // Through the builder so Postgres gets RETURNING id and the new
     // id comes back.
     const posts = await query('posts')
-    const result = await posts.insert({
+    const result = await posts.only('user_id', 'title', 'content', 'published').insert({
       user_id: data.user_id,
       title: data.title,
       content: data.content,

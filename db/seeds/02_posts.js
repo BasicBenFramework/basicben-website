@@ -36,7 +36,7 @@ export async function seed() {
   ]
 
   for (const post of posts) {
-    await (await db.table('posts')).insert(post)
+    await (await db.table('posts')).only('user_id', 'title', 'content', 'published').insert(post)
   }
 
   console.log(`Seeded ${posts.length} posts`)

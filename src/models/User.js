@@ -24,8 +24,11 @@ export const User = {
     // Goes through the query builder so Postgres gets a RETURNING clause and
     // the new id comes back — a raw INSERT yields a null id there, which would
     // mint a token for a nonexistent user.
+    // The columns a new account may set. Core refuses a write that does not
+    // name its columns, and naming them means a stray key in `data` (a role, an
+    // id) is dropped rather than written.
     const users = await query('users')
-    const result = await users.insert(data)
+    const result = await users.only('name', 'email', 'password').insert(data)
     return { id: result.lastInsertRowid, ...data }
   },
 

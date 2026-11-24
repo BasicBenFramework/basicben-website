@@ -205,12 +205,14 @@ export const AuthController = {
     const isFirstUser = (await (await query('users')).count()) === 0
     const role = isFirstUser ? ROLES.ADMIN : DEFAULT_ROLE
 
-    const { lastInsertRowid } = await (await query('users')).insert({
-      name,
-      email,
-      password: await hashPassword(password),
-      role
-    })
+    const { lastInsertRowid } = await (await query('users'))
+      .only('name', 'email', 'password', 'role')
+      .insert({
+        name,
+        email,
+        password: await hashPassword(password),
+        role
+      })
 
     const token = signJwt({ userId: lastInsertRowid, role }, process.env.APP_KEY, {
       expiresIn: '7d'
@@ -224,6 +226,13 @@ export const AuthController = {
           <p className={`text-sm ${t.muted} mt-4`}>
             The role is decided on the server from the number of existing users. Never read it out
             of <code>req.body</code> — that would let anyone register as an administrator.
+          </p>
+
+          <p className={`text-sm ${t.muted} mt-4`}>
+            <code>.only(...)</code> names the columns the insert may write. From 0.9 an
+            <code>insert()</code> or <code>update()</code> without it (or <code>.unguarded()</code>)
+            throws an error with <code>code: 'MASS_ASSIGNMENT'</code>, so a stray <code>role</code>
+            key in a request body can never reach the table.
           </p>
         </Card>
 
@@ -268,6 +277,13 @@ export const AuthController = {
   }
 }`}
           </CodeBlock>
+
+          <p className={`text-sm ${t.muted} mt-4`}>
+            The early return for a missing email matters on 0.9: a <code>where()</code> given
+            <code>undefined</code> throws an error with <code>code: 'UNDEFINED_VALUE'</code>, rather
+            than guessing what a missing input meant. Only a literal <code>null</code> means
+            <code>IS NULL</code>.
+          </p>
 
           <p className={`text-sm ${t.muted} mt-4`}>
             <code>res.json(data, status)</code> takes the status code as a second argument.
@@ -462,8 +478,22 @@ DEFAULT_ROLE
             <code>useAuth</code> exposes the signed-in user and the two functions that change that
             state. The token lives in <code>localStorage</code> under <code>token</code>; on
             startup the router sends it to <code>/api/user</code> to find out who it belongs to,
-            and <code>loading</code> is true until that answer arrives.
+            and <code>loading</code> is true until that answer arrives. With no token stored,
+            there is nothing to check and the first render is the page itself.
           </p>
+
+          <p className={`text-sm ${t.muted} mt-4`}>
+            <code>/api/user</code> is the default of the <code>authEndpoint</code> option to
+            <code>createClientApp()</code>. Point it somewhere else, or set it to <code>false</code>
+            to skip the check, in which case nobody is signed in until <code>setUser</code> says so.
+          </p>
+
+          <CodeBlock title="Changing the auth check">
+{`createClientApp({
+  routes,
+  authEndpoint: '/api/me'   // or false
+})`}
+          </CodeBlock>
 
           <CodeBlock title="Reading the current user">
 {`import { useAuth } from '@basicbenframework/core/client'
@@ -515,8 +545,10 @@ export function Login() {
           </CodeBlock>
 
           <p className={`text-sm ${t.muted} mt-4`}>
-            <code>logout</code> does the reverse: it clears the token, forgets the user, and
-            returns to the home page.
+            <code>logout</code> does the reverse: it POSTs the token to
+            <code>logoutEndpoint</code> (default <code>/api/auth/logout</code>, <code>false</code>
+            to skip it) without waiting for an answer, clears the token, forgets the user, and
+            goes to <code>homePath</code> (default <code>/</code>).
           </p>
 
           <CodeBlock title="src/routes/App.jsx">
@@ -534,6 +566,13 @@ export function Login() {
   }
 })`}
           </CodeBlock>
+
+          <p className={`text-sm ${t.muted} mt-4`}>
+            The guards redirect after render: a guarded route renders nothing, and an effect then
+            navigates to <code>loginPath</code> (default <code>/login</code>) or
+            <code>homePath</code> (default <code>/</code>), replacing the history entry. Before 0.9
+            they called <code>navigate()</code> during render.
+          </p>
 
           <p className={`text-sm ${t.muted} mt-4`}>
             These guards decide what to render, nothing more. They keep a signed-out visitor from

@@ -18,7 +18,7 @@
     "make:model": "basicben make:model"
   },
   "dependencies": {
-    "@basicbenframework/core": "^0.6.0",
+    "@basicbenframework/core": "^0.9.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
@@ -26,7 +26,6 @@
     "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-react": "^5.1.4",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.0.0",
-    "vitest": "^4.0.0"
+    "vite": "^8.0.0"
   }
 }

@@ -93,11 +93,13 @@ export const PostController = {
   store: async (req, res) => {
     const { title, content } = req.body
 
-    const result = await (await db.table('posts')).insert({
-      title,
-      content,
-      user_id: req.userId
-    })
+    const result = await (await db.table('posts'))
+      .only('title', 'content', 'user_id')
+      .insert({
+        title,
+        content,
+        user_id: req.userId
+      })
 
     res.json({ id: result.lastInsertRowid }, 201)
   },
@@ -109,6 +111,7 @@ export const PostController = {
     await (await db.table('posts'))
       .where('id', req.params.id)
       .where('user_id', req.userId)
+      .only('title', 'content')
       .update({ title, content })
 
     res.json({ success: true })
@@ -128,6 +131,10 @@ export const PostController = {
 
           <p className={`text-sm ${t.muted} mt-4`}>
             <code>db.table()</code> resolves the database connection before it hands back a query builder, so it is awaited once before the chain starts. That is the reason for the doubled <code>await</code>.
+          </p>
+
+          <p className={`text-sm ${t.muted} mt-4`}>
+            From 0.9, <code>insert()</code> and <code>update()</code> throw an error with <code>code: 'MASS_ASSIGNMENT'</code> unless the chain names its columns with <code>.only(...)</code>, or opts out with <code>.unguarded()</code>. A key in the object that is not listed is not written.
           </p>
 
           <CodeBlock title="Generate a controller">
@@ -212,6 +219,10 @@ router.route('users.posts', { id: 42 })
           </CodeBlock>
 
           <p className={`text-sm ${t.muted} mt-4`}>
+            From 0.9 the values are URI-encoded, so one with a slash or a space still round-trips through the matcher: <code>{`router.route('posts.show', { id: 'a/b' })`}</code> gives <code>/api/posts/a%2Fb</code>.
+          </p>
+
+          <p className={`text-sm ${t.muted} mt-4`}>
             The name is picked out by type, not by position: of the arguments between the path and the handler, the first string is the name and the rest are middleware. Both orderings below register the same named route. Put the name straight after the path anyway — it reads better, and it is where the next person will look for it.
           </p>
 
@@ -288,7 +299,7 @@ router.group('/api', auth, (group) => {
         <Card>
           <h2 className="text-lg font-semibold mb-2">Route Parameters</h2>
           <p className={`text-sm ${t.muted} mb-4`}>
-            Path segments written as <code>:name</code> are captured into <code>req.params</code>. Query strings are parsed into <code>req.query</code>, and the pathname is available as <code>req.path</code>. Both params and query values are always strings.
+            Path segments written as <code>:name</code> are captured into <code>req.params</code>. Query strings are parsed into <code>req.query</code>, and the pathname is available as <code>req.path</code>.
           </p>
 
           <CodeBlock title="Parameters and query strings">
@@ -304,7 +315,28 @@ export const show = async (req, res) => {
           </CodeBlock>
 
           <p className={`text-sm ${t.muted} mt-4`}>
-            A trailing <code>/*</code> matches everything below a path and captures the remainder as <code>req.params._catchAll</code>.
+            Params arrive URI-decoded: <code>/tags/caf%C3%A9</code> gives <code>'café'</code>. The exceptions are <code>%2F</code> and <code>%5C</code>, which stay encoded, so a param never gains a path separator it did not have. A malformed escape gets a plain <code>400</code> with <code>{`{ "error": "Bad Request" }`}</code>. Before 0.9, params arrived still encoded.
+          </p>
+
+          <p className={`text-sm ${t.muted} mt-4`}>
+            A query key given once is a string. A key given more than once is an array of every value, in order. Check the type before calling string methods on a query value.
+          </p>
+
+          <CodeBlock title="Repeated query keys">
+{`// URL: /api/posts?tag=a&tag=b&sort=new
+req.query  // { tag: ['a', 'b'], sort: 'new' }
+
+const tags = typeof req.query.tag === 'string'
+  ? [req.query.tag]
+  : req.query.tag ?? []`}
+          </CodeBlock>
+
+          <p className={`text-sm ${t.muted} mt-4`}>
+            A trailing <code>/*</code> matches everything below a path and captures the remainder as <code>req.params._catchAll</code>, decoded the same way.
+          </p>
+
+          <p className={`text-sm ${t.muted} mt-4`}>
+            Everything in a route other than <code>:name</code> and <code>*</code> is literal: the <code>.</code> in <code>/feed.xml</code> matches only a dot. Trailing slashes are ignored, so <code>/about/</code> reaches the <code>/about</code> route. A HEAD request with no HEAD route of its own runs the GET route; no body is sent, but the response carries the Content-Length the GET would have sent when the route ends with a single <code>res.end(body)</code>.
           </p>
         </Card>
 
@@ -386,19 +418,59 @@ export default createClientApp({
             <code>auth: true</code> redirects to <code>/login</code> when nobody is signed in. <code>guest: true</code> does the reverse and redirects to <code>/</code> when someone is, which keeps signed-in users off the login page. <code>layout</code> replaces the app-wide <code>layout</code> for that route only.
           </p>
 
+          <p className={`text-sm ${t.muted} mt-4`}>
+            Guards redirect after render: the route renders nothing, and an effect navigates with <code>replace</code>. Client patterns use the server's matcher, so params, literal dots and trailing slashes behave the same on both sides. <code>*</code> works on its own, to match every path, or as a trailing <code>/*</code>; a <code>*</code> in the middle of a path is literal.
+          </p>
+
+          <CodeBlock title="Client config options">
+{`createClientApp({
+  routes,
+  authEndpoint: '/api/user',          // read the signed-in user on load; false skips it
+  logoutEndpoint: '/api/auth/logout', // POSTed on logout; false skips it
+  loginPath: '/login',                // where auth routes send signed-out visitors
+  homePath: '/'                       // where guest routes, and logout, send you
+})`}
+          </CodeBlock>
+
+          <p className={`text-sm ${t.muted} mt-4`}>
+            The values shown are the defaults.
+          </p>
+
           <CodeBlock title="Hooks">
-{`import { useAuth, useNavigate, useParams, usePath } from '@basicbenframework/core/client'
+{`import { useAuth, useNavigate, useParams, usePath, useSearch, useSearchParams } from '@basicbenframework/core/client'
 
 export function EditPost() {
   const { user, logout, loading } = useAuth()
   const navigate = useNavigate()
   const { id } = useParams()
   const path = usePath()
+  const search = useSearch()                  // '?page=2', or ''
+  const [params, setParams] = useSearchParams()
 
   // navigate('/posts')
   // navigate('/posts', { replace: true })
+  // navigate('/posts?page=2#top')
+  // navigate('https://example.com')          // another origin: a full page load
+
+  // setParams({ page: 3 })
+  // setParams(prev => { prev.set('page', '3'); return prev }, { replace: true })
 }`}
           </CodeBlock>
+
+          <p className={`text-sm ${t.muted} mt-4`}>
+            <code>navigate()</code> takes a path with a query string or hash, or a full URL. A URL on another origin is a full page load. <code>useSearchParams()</code> returns a <code>URLSearchParams</code> and a setter that takes a <code>URLSearchParams</code>, a string, an object or a function of the current params, and keeps the path and hash.
+          </p>
+
+          <CodeBlock title="Link">
+{`import { Link } from '@basicbenframework/core/client'
+
+<Link to="/posts">Posts</Link>
+<Link to="/posts?page=2" replace>Next</Link>`}
+          </CodeBlock>
+
+          <p className={`text-sm ${t.muted} mt-4`}>
+            <code>Link</code> renders a real <code>{'<a href>'}</code>. A plain left click on a same-origin link navigates without a page load; modified clicks, a <code>target</code> other than <code>_self</code>, <code>download</code> and other origins are left to the browser.
+          </p>
 
           <p className={`text-sm ${t.muted} mt-4`}>
             These hooks read context that <code>createClientApp</code> provides, so they throw if called from a component rendered outside it.

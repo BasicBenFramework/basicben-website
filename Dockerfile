@@ -29,8 +29,8 @@ RUN npm ci --omit=dev && npm cache clean --force
 # files are auto-loaded from src/routes by scanning the filesystem, not bundled.
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/src ./src
+# db/ holds the migrations and the seeds.
 COPY --from=build /app/db ./db
-COPY --from=build /app/seeds ./seeds
 COPY --from=build /app/basicben.config.js ./
 
 # SQLite lives here. Mount a volume at /app/data so it survives a redeploy.
