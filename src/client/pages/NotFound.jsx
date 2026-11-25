@@ -1,10 +1,9 @@
-import { useNavigate, usePath } from '@basicbenframework/core/client'
+import { usePath } from '@basicbenframework/core/client'
 import { useTheme } from '../components/ThemeContext'
 import { Button } from '../components/Button'
 
 export function NotFound() {
   const { t } = useTheme()
-  const navigate = useNavigate()
   const path = usePath()
 
   return (
@@ -16,8 +15,8 @@ export function NotFound() {
       </p>
 
       <div className="flex items-center justify-center gap-3 mt-6">
-        <Button onClick={() => navigate('/')}>Go home</Button>
-        <Button variant="secondary" onClick={() => navigate('/docs')}>Read the docs</Button>
+        <Button to="/">Go home</Button>
+        <Button variant="secondary" to="/docs">Read the docs</Button>
       </div>
     </div>
   )

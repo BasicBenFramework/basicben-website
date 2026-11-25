@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "basicben dev",
-    "build": "basicben build",
+    "build": "basicben build && node scripts/prerender.js",
     "start": "basicben start",
     "test": "basicben test",
     "migrate": "basicben migrate",

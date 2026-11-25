@@ -1,20 +1,20 @@
-import { useNavigate, usePath } from '@basicbenframework/core/client'
+import { Link, usePath } from '@basicbenframework/core/client'
 import { useTheme } from '../components/ThemeContext'
 import { AppLayout } from './AppLayout'
 
 function SidebarLink({ href, active, children }) {
   const { t } = useTheme()
-  const navigate = useNavigate()
 
   return (
-    <button
-      onClick={() => navigate(href)}
+    <Link
+      to={href}
+      aria-current={active ? 'page' : undefined}
       className={`block w-full text-left px-3 py-2 rounded-lg text-sm transition ${
         active ? `${t.card} font-medium` : `${t.muted} hover:opacity-70`
       }`}
     >
       {children}
-    </button>
+    </Link>
   )
 }
 

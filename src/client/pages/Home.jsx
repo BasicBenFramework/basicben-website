@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useAuth, useNavigate } from '@basicbenframework/core/client'
+import { useAuth } from '@basicbenframework/core/client'
 import { useTheme } from '../components/ThemeContext'
 import { Card } from '../components/Card'
 import { Button } from '../components/Button'
@@ -8,7 +8,6 @@ import { Logo } from '../components/Logo'
 
 export function Home() {
   const { user } = useAuth()
-  const navigate = useNavigate()
   const { t, dark } = useTheme()
   const [version, setVersion] = useState(null)
 
@@ -93,8 +92,8 @@ export function Home() {
             <span className={t.muted}>$</span> npx @basicbenframework/create my-app
           </div>
           <div className="flex gap-3">
-            <Button onClick={() => navigate('/docs')}>Get Started</Button>
-            <Button variant="secondary" onClick={() => window.open('https://github.com/BasicBenFramework/core', '_blank')}>
+            <Button to="/docs">Get Started</Button>
+            <Button variant="secondary" href="https://github.com/BasicBenFramework/core" target="_blank" rel="noopener">
               GitHub
             </Button>
           </div>
@@ -198,8 +197,8 @@ export default (router) => {
               </div>
             </div>
             <div className="flex gap-2">
-              <Button variant="secondary" onClick={() => navigate('/posts')} className="text-xs px-3 py-1.5">My Posts</Button>
-              <Button variant="secondary" onClick={() => navigate('/profile')} className="text-xs px-3 py-1.5">Profile</Button>
+              <Button variant="secondary" to="/posts" className="text-xs px-3 py-1.5">My Posts</Button>
+              <Button variant="secondary" to="/profile" className="text-xs px-3 py-1.5">Profile</Button>
             </div>
           </div>
         </Card>

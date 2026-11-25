@@ -227,9 +227,7 @@ import { createApiToken } from '@basicbenframework/core/auth/api-tokens'`}</pre>
               GitHub
             </a>
             <a
-              href="https://basicben.com"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/"
               className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg ${t.btnSecondary} transition text-sm`}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

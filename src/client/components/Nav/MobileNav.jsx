@@ -1,4 +1,4 @@
-import { useAuth } from '@basicbenframework/core/client'
+import { Link, useAuth } from '@basicbenframework/core/client'
 import { useTheme } from '../ThemeContext'
 import { Logo } from '../Logo'
 
@@ -37,18 +37,20 @@ export function MobileNav({ navigate, onClose }) {
 
         <div className="flex-1 overflow-y-auto px-6 py-4">
           <div className="space-y-1">
-            <button
-              onClick={() => handleNav('/')}
-              className={`w-full text-left px-4 py-3 rounded-lg ${t.card} hover:opacity-80 transition`}
+            <Link
+              to="/"
+              onClick={onClose}
+              className={`block w-full text-left px-4 py-3 rounded-lg ${t.card} hover:opacity-80 transition`}
             >
               Home
-            </button>
-            <button
-              onClick={() => handleNav('/docs')}
-              className={`w-full text-left px-4 py-3 rounded-lg ${t.card} hover:opacity-80 transition`}
+            </Link>
+            <Link
+              to="/docs"
+              onClick={onClose}
+              className={`block w-full text-left px-4 py-3 rounded-lg ${t.card} hover:opacity-80 transition`}
             >
               Docs
-            </button>
+            </Link>
             {/* Feed is hidden with the /feed routes in src/routes/App.jsx: it
                 needs the API, which basicben.com does not run. Restore them
                 together. */}
@@ -58,18 +60,20 @@ export function MobileNav({ navigate, onClose }) {
                 together. */}
             {user && (
               <>
-                <button
-                  onClick={() => handleNav('/posts')}
-                  className={`w-full text-left px-4 py-3 rounded-lg ${t.card} hover:opacity-80 transition`}
+                <Link
+                  to="/posts"
+                  onClick={onClose}
+                  className={`block w-full text-left px-4 py-3 rounded-lg ${t.card} hover:opacity-80 transition`}
                 >
                   My Posts
-                </button>
-                <button
-                  onClick={() => handleNav('/profile')}
-                  className={`w-full text-left px-4 py-3 rounded-lg ${t.card} hover:opacity-80 transition`}
+                </Link>
+                <Link
+                  to="/profile"
+                  onClick={onClose}
+                  className={`block w-full text-left px-4 py-3 rounded-lg ${t.card} hover:opacity-80 transition`}
                 >
                   Profile
-                </button>
+                </Link>
                 <button
                   onClick={handleLogout}
                   className={`w-full text-left px-4 py-3 rounded-lg ${t.card} hover:opacity-80 transition`}
