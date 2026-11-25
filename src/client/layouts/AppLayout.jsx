@@ -6,13 +6,11 @@ import { DesktopNav } from '../components/Nav/DesktopNav'
 import { MobileNav } from '../components/Nav/MobileNav'
 import { DarkModeToggle } from '../components/Nav/DarkModeToggle'
 import { Logo } from '../components/Logo'
-import { useDocumentMeta } from '../useDocumentMeta'
 
 function AppLayoutInner({ children }) {
   const { t, dark, setDark } = useTheme()
   const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  useDocumentMeta()
 
   return (
     <div className="max-w-3xl mx-auto px-6">

@@ -31,14 +31,16 @@ npm run seed         # Load sample data
 basicben.com is a static site on Cloudflare Pages. Pages builds `main` on every
 push and serves the client bundle, `dist/client`; there is nothing to run by
 hand. The build command and output directory live in the Pages project's
-settings, not in this repo: the command must be `npm run build`, which runs
-`scripts/prerender.js` after the Vite build.
+settings, not in this repo: the command must be `npm run build`, which is
+`basicben build` with `prerender: true` set in `basicben.config.js`.
 
-The prerender writes one HTML file per public page (`/docs/routing` →
-`docs/routing.html`) with its own title, description, canonical and Open Graph
-tags, plus `404.html`, `sitemap.xml` and `robots.txt`. A public page is listed
-in `src/client/seo.js` as well as in `src/routes/App.jsx`; one that is only in
-App.jsx still works in the browser but is not prerendered or in the sitemap.
+The framework's prerender writes one HTML file per public page
+(`/docs/routing` → `docs/routing.html`) with its own title, description,
+canonical and Open Graph tags, plus `404.html`, `sitemap.xml` and `robots.txt`.
+Each page's title and description live in `src/client/seo.js`, which gives them
+to the routes in `src/routes/App.jsx` as their `head`. A public page is listed
+in both; one that is only in App.jsx still works but is marked noindex and left
+out of the sitemap.
 
 Only the client is deployed. No Node server runs behind basicben.com, so
 `/api/*` answers with the app's `index.html`. The docs and the home page are

@@ -5,6 +5,10 @@
  */
 
 export default {
+  // Write each page's HTML at build time, with its head tags, plus 404.html,
+  // sitemap.xml and robots.txt — basicben.com is static on Cloudflare Pages.
+  prerender: true,
+
   // Server options
   port: 3001,
 

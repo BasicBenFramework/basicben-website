@@ -1,14 +1,14 @@
 /**
  * What each public page tells search engines and link previews.
  *
- * One table, read twice: by `scripts/prerender.js`, which writes these tags
- * into the HTML of every page at build time (what crawlers and share cards
- * read), and by `useDocumentMeta` in the layout, which keeps the tab title and
- * the tags right as the visitor navigates client-side.
+ * `withHead` gives each route in src/routes/App.jsx its entry from this table
+ * as the route's `head`. The framework does the rest: `basicben build` (with
+ * `prerender: true`) writes the tags into every page's HTML, which is what
+ * crawlers and share cards read, and the router keeps the tab title and tags
+ * right as the visitor navigates.
  *
- * Adding a public page means adding it here as well as in src/routes/App.jsx;
- * a route that is not listed here is not prerendered, not in the sitemap, and
- * is marked noindex.
+ * Adding a public page means adding it here as well as in App.jsx; a route
+ * that is not listed here is marked noindex and left out of the sitemap.
  */
 
 export const SITE_URL = 'https://basicben.com'
@@ -43,22 +43,30 @@ export const PAGES = {
     'Test a BasicBen app with node:test: how tests run, testing controllers and database code, coverage, and coming from Vitest.')
 }
 
-const NOT_FOUND = {
-  title: 'Page not found — BasicBen',
-  description: null,
-  noindex: true
+/** createClientApp's `head`: the defaults every page starts from. */
+export const HEAD = {
+  title: SITE_NAME,
+  titleTemplate: `%s — ${SITE_NAME}`,
+  siteUrl: SITE_URL
 }
 
-/** Path without a trailing slash, `/` itself excepted. */
-function normalize(path) {
-  const clean = String(path || '/').split(/[?#]/)[0]
-  return clean.length > 1 ? clean.replace(/\/+$/, '') : '/'
+const WEBSITE_JSON_LD = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE_NAME,
+  url: SITE_URL + '/',
+  description: PAGES['/'].description
 }
 
-/** Title, description, canonical URL and noindex for a path. */
-export function metaFor(path) {
-  const key = normalize(path)
-  const page = PAGES[key]
-  if (!page) return { ...NOT_FOUND, canonical: null }
-  return { ...page, noindex: false, canonical: SITE_URL + (key === '/' ? '/' : key) }
+/** The routes, each with its `head` from PAGES; a route not in PAGES is noindex. */
+export function withHead(routes) {
+  const out = {}
+  for (const [path, value] of Object.entries(routes)) {
+    const page = PAGES[path]
+    const head = page
+      ? { ...page, fullTitle: true, ...(path === '/' ? { jsonLd: WEBSITE_JSON_LD } : {}) }
+      : { noindex: true }
+    out[path] = typeof value === 'function' ? { component: value, head } : { ...value, head }
+  }
+  return out
 }

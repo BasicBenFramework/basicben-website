@@ -23,11 +23,14 @@ import { Storage } from '../client/pages/Storage'
 import { Extending } from '../client/pages/Extending'
 import { Headless } from '../client/pages/Headless'
 import { NotFound } from '../client/pages/NotFound'
+import { HEAD, withHead } from '../client/seo'
 
 export default createClientApp({
   layout: AppLayout,
   NotFound,
-  routes: {
+  head: HEAD,
+  // Each public page's title and description come from src/client/seo.js.
+  routes: withHead({
     '/': Home,
     // Hidden for now, along with the nav entries in client/components/Nav.
     // Restore the two together. With these gone there is no way to sign in, so
@@ -56,5 +59,5 @@ export default createClientApp({
     '/docs/extending': { component: Extending, layout: DocsLayout },
     '/docs/headless': { component: Headless, layout: DocsLayout },
     '/docs/testing': { component: Testing, layout: DocsLayout },
-  }
+  })
 })
