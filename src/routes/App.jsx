@@ -6,8 +6,9 @@ import { AppLayout } from '../client/layouts/AppLayout'
 import { DocsLayout } from '../client/layouts/DocsLayout'
 import { Home } from '../client/pages/Home'
 // import { Auth } from '../client/pages/Auth'
-import { Feed } from '../client/pages/Feed'
-import { FeedPost } from '../client/pages/FeedPost'
+// Unused while /feed is hidden (see the routes below).
+// import { Feed } from '../client/pages/Feed'
+// import { FeedPost } from '../client/pages/FeedPost'
 import { Posts } from '../client/pages/Posts'
 import { PostForm } from '../client/pages/PostForm'
 import { Profile } from '../client/pages/Profile'
@@ -35,8 +36,12 @@ export default createClientApp({
     // NotFound — the router's redirect target for `auth` is always '/login'.
     // '/login': { component: Auth, layout: AuthLayout, guest: true },
     // '/register': { component: Auth, layout: AuthLayout, guest: true },
-    '/feed': Feed,
-    '/feed/:id': FeedPost,
+    // Hidden, along with the Feed entries in client/components/Nav: the feed
+    // reads /api/feed, and basicben.com is a static site with no server behind
+    // it (see the README's Deployment section), so it got HTML, not posts.
+    // Restore the routes, the imports and the nav entries together.
+    // '/feed': Feed,
+    // '/feed/:id': FeedPost,
     '/posts': { component: Posts, auth: true },
     '/posts/new': { component: PostForm, auth: true },
     '/posts/:id/edit': { component: PostForm, auth: true },

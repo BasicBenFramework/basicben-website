@@ -15,7 +15,8 @@ export function DesktopNav({ navigate }) {
   return (
     <div className="hidden sm:flex items-center gap-2">
       <NavLink onClick={() => navigate('/docs')}>Docs</NavLink>
-      <NavLink onClick={() => navigate('/feed')}>Feed</NavLink>
+      {/* Feed is hidden with the /feed routes in src/routes/App.jsx: it needs
+          the API, which basicben.com does not run. Restore them together. */}
 
       {/* Log in / Sign up are hidden for now, together with the /login and
           /register routes in src/routes/App.jsx — restore the two together.

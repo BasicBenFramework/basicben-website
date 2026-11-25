@@ -49,12 +49,9 @@ export function MobileNav({ navigate, onClose }) {
             >
               Docs
             </button>
-            <button
-              onClick={() => handleNav('/feed')}
-              className={`w-full text-left px-4 py-3 rounded-lg ${t.card} hover:opacity-80 transition`}
-            >
-              Feed
-            </button>
+            {/* Feed is hidden with the /feed routes in src/routes/App.jsx: it
+                needs the API, which basicben.com does not run. Restore them
+                together. */}
 
             {/* Log in / Sign up are hidden for now, together with the /login
                 and /register routes in src/routes/App.jsx — restore the two

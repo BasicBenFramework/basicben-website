@@ -35,12 +35,11 @@ settings, not in this repo.
 
 Only the client is deployed. No Node server runs behind basicben.com, so
 `/api/*` answers with the app's `index.html`. The docs and the home page are
-client-side and need nothing else. The app pages are another matter:
-
-- Sign-in and registration are already hidden (see `src/routes/App.jsx`), so
-  My Posts and Profile cannot be reached there.
-- Feed is still in the nav and calls `/api/feed`, so on basicben.com it gets
-  HTML back instead of posts.
+client-side and need nothing else. The app pages need the API, so they are
+hidden: sign-in, registration and the Feed are commented out in
+`src/routes/App.jsx` and in the nav (`src/client/components/Nav/`), and My
+Posts and Profile cannot be reached without signing in. To bring them back,
+deploy the server (below) and restore each route together with its nav entry.
 
 ### The full app
 
