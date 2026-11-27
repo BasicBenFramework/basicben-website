@@ -4,19 +4,33 @@ import { ToastProvider } from '../contexts/ToastContext'
 
 const STORAGE_KEY = 'theme'
 
-function initialDark() {
-  if (typeof localStorage === 'undefined') return true
-  const stored = localStorage.getItem(STORAGE_KEY)
-  return stored === null ? true : stored === 'dark'
+/** The saved choice; dark when there is none. */
+function storedDark() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    return stored === null ? true : stored === 'dark'
+  } catch {
+    return true
+  }
 }
+
+// The first mount hydrates the prerendered page, which is dark, so it must
+// start dark too and switch after; a mismatch would leave the prerender's
+// classes in place. Later mounts read the saved choice straight away.
+let restored = false
 
 export function RootLayout({ children }) {
   // Persisted because RootLayout is mounted inside each layout family, so the
   // router unmounts this subtree when moving between them. An in-memory
   // preference would reset every time you navigated from /docs back to /.
-  const [dark, setDark] = useState(initialDark)
+  const [dark, setDark] = useState(() => (restored ? storedDark() : true))
 
   useEffect(() => {
+    if (!restored) {
+      restored = true
+      const saved = storedDark()
+      if (saved !== dark) return setDark(saved)
+    }
     localStorage.setItem(STORAGE_KEY, dark ? 'dark' : 'light')
   }, [dark])
 

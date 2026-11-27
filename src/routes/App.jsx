@@ -29,6 +29,8 @@ export default createClientApp({
   layout: AppLayout,
   NotFound,
   head: HEAD,
+  // Page changes cross-fade (View Transitions); see styles.css.
+  transitions: true,
   // Each public page's title and description come from src/client/seo.js.
   routes: withHead({
     '/': Home,

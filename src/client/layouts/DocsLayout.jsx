@@ -38,7 +38,7 @@ function DocsSidebar({ children }) {
   return (
     <div className="flex gap-8">
       <aside className="hidden md:block w-48 flex-shrink-0">
-        <nav className="sticky top-20 space-y-1">
+        <nav className="docs-sidebar sticky top-20 space-y-1">
           {docLinks.map(link => (
             <SidebarLink
               key={link.href}

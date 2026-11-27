@@ -35,3 +35,16 @@
     }
   }
 }
+
+/*
+ * Page transitions. The router (transitions: true in src/routes/App.jsx) runs
+ * each page change as a view transition: the page cross-fades, quickly, while
+ * the top bar and the docs sidebar stay where they are.
+ */
+.site-nav { view-transition-name: site-nav; }
+.docs-sidebar { view-transition-name: docs-sidebar; }
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 160ms;
+}

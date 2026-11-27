@@ -14,7 +14,7 @@ function AppLayoutInner({ children }) {
 
   return (
     <div className="max-w-3xl mx-auto px-6">
-      <nav className={`flex items-center justify-between h-14 border-b ${t.border} relative`}>
+      <nav className={`site-nav flex items-center justify-between h-14 border-b ${t.border} relative`}>
         <Link to="/" className="flex items-center gap-2 font-semibold hover:opacity-70 transition">
           <Logo className="w-6 h-6" />
           <span>BasicBen</span>
