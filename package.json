@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "basicben dev",
     "build": "basicben build",
+    "postbuild": "node scripts/pages-postbuild.js",
     "start": "basicben start",
     "test": "basicben test",
     "migrate": "basicben migrate",

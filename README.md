@@ -32,7 +32,9 @@ basicben.com is a static site on Cloudflare Pages. Pages builds `main` on every
 push and serves the client bundle, `dist/client`; there is nothing to run by
 hand. The build command and output directory live in the Pages project's
 settings, not in this repo: the command must be `npm run build`, which is
-`basicben build` with `prerender: true` set in `basicben.config.js`.
+`basicben build` with `prerender: true` set in `basicben.config.js`. On Pages
+(`CF_PAGES` set) the build then drops `dist/client/.basicben/`, which only the
+Node server reads (`scripts/pages-postbuild.js`).
 
 The framework's prerender writes one HTML file per public page
 (`/docs/routing` → `docs/routing.html`) with its own title, description,
