@@ -13,6 +13,13 @@
 
 @import 'tailwindcss';
 
+/*
+ * The light theme. Dark is the default; `light:` classes apply under
+ * <html class="light">, which index.html sets from the saved choice before the
+ * first paint, so a light-mode visitor never sees the dark prerender.
+ */
+@custom-variant light (&:where(.light, .light *));
+
 @theme {
   /* Used by the page shell in index.html. */
   --color-dark-900: #0f0f0f;

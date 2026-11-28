@@ -110,12 +110,12 @@ export function Home() {
                 key={name}
                 className={`flex items-center justify-between p-3 rounded-lg ${
                   highlight
-                    ? `${dark ? 'bg-white/10' : 'bg-black/10'} border ${t.border}`
+                    ? `bg-white/10 light:bg-black/10 border ${t.border}`
                     : ''
                 }`}
               >
                 <span className={`font-medium ${highlight ? '' : t.muted}`}>{name}</span>
-                <span className={`text-sm ${highlight ? (dark ? 'text-green-400' : 'text-green-600') : t.subtle}`}>
+                <span className={`text-sm ${highlight ? 'text-green-400 light:text-green-600' : t.subtle}`}>
                   {highlight ? '✓ ' : ''}{issue}
                 </span>
               </div>
@@ -153,7 +153,7 @@ export function Home() {
                 key={item}
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg ${t.card} border ${t.border} text-sm`}
               >
-                <svg className={`w-4 h-4 flex-shrink-0 ${dark ? 'text-green-400' : 'text-green-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className={`w-4 h-4 flex-shrink-0 text-green-400 light:text-green-600`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
                 <span>{item}</span>
@@ -167,7 +167,7 @@ export function Home() {
       <section>
         <h2 className={`text-center text-sm font-medium uppercase tracking-wider ${t.muted} mb-6`}>Clean & Simple</h2>
         <Card>
-          <div className={`rounded-lg p-4 font-mono text-sm ${dark ? 'bg-black/50' : 'bg-black/5'} border ${t.border} overflow-x-auto`}>
+          <div className={`rounded-lg p-4 font-mono text-sm bg-black/50 light:bg-black/5 border ${t.border} overflow-x-auto`}>
             <pre className={t.text}>{`// src/routes/posts.js
 import { PostController } from '../controllers/PostController.js'
 import { auth } from '../middleware/auth.js'

@@ -24,14 +24,14 @@ export function DesktopNav({ navigate }) {
           two of them with nothing in between. */}
       {user && (
         <>
-          <div className={`w-px h-5 mx-1 ${dark ? 'bg-white/20' : 'bg-black/20'}`} />
+          <div className={`w-px h-5 mx-1 bg-white/20 light:bg-black/20`} />
           <NavLink to="/posts">My Posts</NavLink>
           <NavLink to="/profile">Profile</NavLink>
           <NavLink onClick={handleLogout}>Log out</NavLink>
         </>
       )}
 
-      <div className={`w-px h-5 mx-1 ${dark ? 'bg-white/20' : 'bg-black/20'}`} />
+      <div className={`w-px h-5 mx-1 bg-white/20 light:bg-black/20`} />
 
       <DarkModeToggle dark={dark} setDark={setDark} />
 

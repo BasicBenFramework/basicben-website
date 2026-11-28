@@ -1,0 +1,9 @@
+# Cloudflare Pages response headers.
+#
+# Vite names every built JS and CSS file after its content
+# (index-BQtWnzMt.js), so a file at a given /assets/ URL never changes: a new
+# build makes new names. Browsers may keep them for a year without asking.
+# HTML keeps Pages' default (revalidated on every visit), so a deploy shows up
+# at once.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
